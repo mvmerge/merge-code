@@ -6,13 +6,15 @@ INSTALL_DIR="$HOME/.merge"
 
 echo "Installing merge..."
 
-# Check for bun or node
-if command -v bun &> /dev/null; then
-  RUNNER="bun"
-elif command -v node &> /dev/null; then
-  RUNNER="node"
-else
-  echo "Error: bun or node is required. Install bun at https://bun.sh"
+# Check for bun
+if ! command -v bun &> /dev/null; then
+  echo "Error: bun is required. Install it at https://bun.sh"
+  exit 1
+fi
+
+# Check for git
+if ! command -v git &> /dev/null; then
+  echo "Error: git is required."
   exit 1
 fi
 
@@ -26,18 +28,25 @@ fi
 
 # Install dependencies
 cd "$INSTALL_DIR"
-if command -v bun &> /dev/null; then
-  bun install --quiet
+bun install --quiet
+
+# Write the launcher script
+PRELOAD="$INSTALL_DIR/node_modules/.bun/node_modules/@opentui/solid/scripts/preload.ts"
+ENTRY="$INSTALL_DIR/packages/opencode/src/index.ts"
+
+cat > /tmp/merge-bin << EOF
+#!/bin/bash
+exec bun run --conditions=browser --preload "$PRELOAD" "$ENTRY" "\$@"
+EOF
+
+chmod +x /tmp/merge-bin
+
+# Install to /usr/local/bin
+if mv /tmp/merge-bin /usr/local/bin/merge 2>/dev/null; then
+  true
 else
-  npm install --quiet
+  sudo mv /tmp/merge-bin /usr/local/bin/merge
 fi
 
-# Link the binary
-BIN_PATH="/usr/local/bin/merge"
-echo "#!/bin/bash" > /tmp/merge-bin
-echo "exec bun run --conditions=browser \"$INSTALL_DIR/packages/opencode/src/index.ts\" \"\$@\"" >> /tmp/merge-bin
-chmod +x /tmp/merge-bin
-mv /tmp/merge-bin "$BIN_PATH" 2>/dev/null || sudo mv /tmp/merge-bin "$BIN_PATH"
-
 echo ""
-echo "✓ merge installed! Run 'merge' to get started."
+echo "Done! Run 'merge' to get started."
