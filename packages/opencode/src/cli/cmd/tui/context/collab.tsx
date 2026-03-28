@@ -99,7 +99,7 @@ export function CollabProvider(props: ParentProps) {
   }
 
   async function connect(sessionId: string, role: CollabRole, initialModel?: string) {
-    const relayUrl = Flag.MERGE_RELAY_URL ?? "http://localhost:4000"
+    const relayUrl = Flag.MERGE_RELAY_URL ?? "https://merge-relay.onrender.com"
     const peerId = crypto.randomUUID().slice(0, 8).toUpperCase()
     const wsUrl =
       relayUrl.replace(/^http/, "ws") +
@@ -204,7 +204,7 @@ export function CollabProvider(props: ParentProps) {
   }
 
   async function create(initialModel?: string): Promise<string> {
-    const relayUrl = Flag.MERGE_RELAY_URL ?? "http://localhost:4000"
+    const relayUrl = Flag.MERGE_RELAY_URL ?? "https://merge-relay.onrender.com"
     const resp = await fetch(`${relayUrl}/session/new`, { method: "POST" })
     if (!resp.ok) throw new Error(`relay returned ${resp.status}`)
     const { sessionId } = (await resp.json()) as { sessionId: string }
