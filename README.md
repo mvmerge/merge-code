@@ -10,7 +10,7 @@
 <p align="center">The open source AI coding agent.</p>
 <p align="center">
   <a href="https://merge.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/merge-ai"><img alt="npm" src="https://img.shields.io/npm/v/merge-ai?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@mvmerge/merge"><img alt="npm" src="https://img.shields.io/npm/v/@mvmerge/merge?style=flat-square" /></a>
   <a href="https://github.com/anomalyco/merge/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/merge/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
@@ -46,19 +46,16 @@
 ### Installation
 
 ```bash
-# YOLO
-curl -fsSL https://merge.ai/install | bash
+# npm / bun / pnpm / yarn
+npm install -g @mvmerge/merge
+bun install -g @mvmerge/merge
+pnpm install -g @mvmerge/merge
+```
 
-# Package managers
-npm i -g merge-ai@latest        # or bun/pnpm/yarn
-scoop install merge             # Windows
-choco install merge             # Windows
-brew install anomalyco/tap/merge # macOS and Linux (recommended, always up to date)
-brew install merge              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S merge            # Arch Linux (Stable)
-paru -S merge-bin               # Arch Linux (Latest from AUR)
-mise use -g merge               # Any OS
-nix run nixpkgs#merge           # or github:anomalyco/merge for latest dev branch
+Then run:
+
+```bash
+merge
 ```
 
 > [!TIP]
