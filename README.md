@@ -46,7 +46,7 @@
 ### Installation
 
 ```bash
-npm install -g @mvmerge/merge --registry=https://npm.pkg.github.com
+curl -fsSL https://raw.githubusercontent.com/mvmerge/merge-code/dev/install.sh | bash
 ```
 
 Then run:
