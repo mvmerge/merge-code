@@ -30,14 +30,21 @@ fi
 cd "$INSTALL_DIR"
 bun install --quiet
 
-# Write the launcher script
-PRELOAD="$INSTALL_DIR/node_modules/.bun/node_modules/@opentui/solid/scripts/preload.ts"
+# Find the preload script
+PRELOAD=$(find "$INSTALL_DIR" -path "*/opentui/solid/scripts/preload.ts" 2>/dev/null | head -1)
+
+if [ -z "$PRELOAD" ]; then
+  echo "Error: could not find @opentui/solid preload script after bun install."
+  exit 1
+fi
+
 ENTRY="$INSTALL_DIR/packages/opencode/src/index.ts"
 
-cat > /tmp/merge-bin << EOF
+# Write the launcher script
+cat > /tmp/merge-bin << SCRIPT
 #!/bin/bash
 exec bun run --conditions=browser --preload "$PRELOAD" "$ENTRY" "\$@"
-EOF
+SCRIPT
 
 chmod +x /tmp/merge-bin
 
