@@ -10,7 +10,7 @@
 <p align="center">The open source AI coding agent.</p>
 <p align="center">
   <a href="https://merge.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/@mvmerge/merge"><img alt="npm" src="https://img.shields.io/npm/v/@mvmerge/merge?style=flat-square" /></a>
+  <a href="https://github.com/mvmerge/merge-code/pkgs/npm/merge"><img alt="version" src="https://img.shields.io/github/package-json/v/mvmerge/merge-code?style=flat-square" /></a>
   <a href="https://github.com/anomalyco/merge/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/merge/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
@@ -46,10 +46,7 @@
 ### Installation
 
 ```bash
-# npm / bun / pnpm / yarn
-npm install -g @mvmerge/merge
-bun install -g @mvmerge/merge
-pnpm install -g @mvmerge/merge
+npm install -g @mvmerge/merge --registry=https://npm.pkg.github.com
 ```
 
 Then run:

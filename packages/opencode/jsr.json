@@ -1,0 +1,7 @@
+{
+  "name": "@mvmerge/merge",
+  "version": "1.3.3",
+  "description": "The open source AI coding agent",
+  "license": "MIT",
+  "exports": "./src/index.ts"
+}
