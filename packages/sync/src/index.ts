@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 
-const PORT = Number(process.env.MERGE_RELAY_PORT ?? 4000)
+const PORT = Number(process.env.PORT ?? process.env.MERGE_RELAY_PORT ?? 4000)
 
 // --- Types ---
 type Role = "driver" | "observer"
