@@ -44,9 +44,9 @@ export namespace Server {
         // Allow CORS preflight requests to succeed without auth.
         // Browser clients sending Authorization headers will preflight with OPTIONS.
         if (c.req.method === "OPTIONS") return next()
-        const password = Flag.OPENCODE_SERVER_PASSWORD
+        const password = Flag.MERGE_SERVER_PASSWORD
         if (!password) return next()
-        const username = Flag.OPENCODE_SERVER_USERNAME ?? "opencode"
+        const username = Flag.MERGE_SERVER_USERNAME ?? "merge"
         return basicAuth({ username, password })(c, next)
       })
       .use(async (c, next) => {
@@ -81,8 +81,8 @@ export namespace Server {
             )
               return input
 
-            // *.opencode.ai (https only, adjust if needed)
-            if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) {
+            // *.merge.ai (https only, adjust if needed)
+            if (/^https:\/\/([a-z0-9-]+\.)*merge\.ai$/.test(input)) {
               return input
             }
             if (opts?.cors?.includes(input)) {
@@ -165,9 +165,9 @@ export namespace Server {
         openAPIRouteHandler(app, {
           documentation: {
             info: {
-              title: "opencode",
+              title: "merge",
               version: "0.0.3",
-              description: "opencode api",
+              description: "merge api",
             },
             openapi: "3.1.1",
           },
@@ -251,9 +251,9 @@ export namespace Server {
     const result = await generateSpecs(app, {
       documentation: {
         info: {
-          title: "opencode",
+          title: "merge",
           version: "1.0.0",
-          description: "opencode api",
+          description: "merge api",
         },
         openapi: "3.1.1",
       },

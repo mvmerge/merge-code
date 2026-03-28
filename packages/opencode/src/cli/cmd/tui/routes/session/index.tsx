@@ -29,7 +29,7 @@ import {
   RGBA,
 } from "@opentui/core"
 import { Prompt, type PromptRef } from "@tui/component/prompt"
-import type { AssistantMessage, Part, ToolPart, UserMessage, TextPart, ReasoningPart } from "@opencode-ai/sdk/v2"
+import type { AssistantMessage, Part, ToolPart, UserMessage, TextPart, ReasoningPart } from "@merge-ai/sdk/v2"
 import { useLocal } from "@tui/context/local"
 import { Locale } from "@/util/locale"
 import type { Tool } from "@/tool/tool"
@@ -78,6 +78,10 @@ import { PermissionPrompt } from "./permission"
 import { QuestionPrompt } from "./question"
 import { DialogExportOptions } from "../../ui/dialog-export-options"
 import { formatTranscript } from "../../util/transcript"
+import { DialogPrompt as DialogPromptInput } from "@tui/ui/dialog-prompt"
+import { useCollab } from "@tui/context/collab"
+import { CollabBridge, captureFileTree } from "@tui/component/collab-bridge"
+import { MessageID, PartID } from "@/session/schema"
 import { UI } from "@/cli/ui.ts"
 import { useTuiConfig } from "../../context/tui-config"
 
@@ -251,7 +255,7 @@ export function Session() {
         `${logo[3] ?? ""}`,
         ``,
         `  ${weak("Session")}${UI.Style.TEXT_NORMAL_BOLD}${title}${UI.Style.TEXT_NORMAL}`,
-        `  ${weak("Continue")}${UI.Style.TEXT_NORMAL_BOLD}opencode -s ${session()?.id}${UI.Style.TEXT_NORMAL}`,
+        `  ${weak("Continue")}${UI.Style.TEXT_NORMAL_BOLD}merge -s ${session()?.id}${UI.Style.TEXT_NORMAL}`,
         ``,
       ].join("\n"),
     )
@@ -353,6 +357,7 @@ export function Session() {
     }
   }
 
+  const collab = useCollab()
   const command = useCommandDialog()
   command.register(() => [
     {
@@ -965,6 +970,103 @@ export function Session() {
         dialog.clear()
       }),
     },
+    // --- Collaborate commands ---
+    {
+      title: "Start collaboration session",
+      value: "collaborate.start",
+      category: "Collaborate",
+      slash: { name: "collaborate start", aliases: ["collab start"] },
+      onSelect: async (dialog) => {
+        dialog.clear()
+        const relayUrl = Flag.MERGE_RELAY_URL ?? "http://localhost:4000"
+        try {
+          const res = await fetch(`${relayUrl}/session/new`, { method: "POST" })
+          if (!res.ok) throw new Error(`relay returned ${res.status}`)
+          const { sessionId } = await res.json() as { sessionId: string; joinUrl: string }
+          await collab.connect(sessionId, "driver")
+          toast.show({
+            variant: "success",
+            title: "Collaboration started",
+            message: `Session: ${sessionId}  |  merge --join ${sessionId}`,
+            duration: 10000,
+          })
+        } catch (e) {
+          toast.show({ variant: "error", message: `Could not reach relay: ${relayUrl}. Set MERGE_RELAY_URL or start relay first.`, duration: 6000 })
+        }
+      },
+    },
+    {
+      title: "Join collaboration session",
+      value: "collaborate.join",
+      category: "Collaborate",
+      slash: { name: "collaborate join", aliases: ["collab join"] },
+      onSelect: async (dialog) => {
+        dialog.clear()
+        const id = await DialogPromptInput.show(dialog, "Join session", { placeholder: "Enter session ID" })
+        if (!id) return
+        await collab.connect(id.trim().toUpperCase(), "observer")
+        toast.show({ variant: "info", message: `Joined session ${id.trim().toUpperCase()}`, duration: 4000 })
+      },
+    },
+    {
+      title: "Set collaboration mode: pair",
+      value: "collaborate.mode.pair",
+      category: "Collaborate",
+      slash: { name: "collaborate mode pair", aliases: ["collab mode pair"] },
+      enabled: collab.state.connected,
+      onSelect: (dialog) => { collab.setMode("pair"); dialog.clear() },
+    },
+    {
+      title: "Set collaboration mode: copilot",
+      value: "collaborate.mode.copilot",
+      category: "Collaborate",
+      slash: { name: "collaborate mode copilot", aliases: ["collab mode copilot"] },
+      enabled: collab.state.connected,
+      onSelect: (dialog) => { collab.setMode("copilot"); dialog.clear() },
+    },
+    {
+      title: "Set collaboration mode: review",
+      value: "collaborate.mode.review",
+      category: "Collaborate",
+      slash: { name: "collaborate mode review", aliases: ["collab mode review"] },
+      enabled: collab.state.connected,
+      onSelect: (dialog) => { collab.setMode("review"); dialog.clear() },
+    },
+    {
+      title: "Approve pending prompt",
+      value: "collaborate.approve",
+      category: "Collaborate",
+      slash: { name: "collaborate approve", aliases: ["collab approve"] },
+      enabled: collab.state.connected && collab.state.mode === "review",
+      onSelect: (dialog) => { collab.approve(); dialog.clear() },
+    },
+    {
+      title: "Collaboration status",
+      value: "collaborate.status",
+      category: "Collaborate",
+      slash: { name: "collaborate status", aliases: ["collab status"] },
+      onSelect: (dialog) => {
+        dialog.clear()
+        if (!collab.state.connected) {
+          toast.show({ variant: "info", message: "No active collaboration session", duration: 3000 })
+          return
+        }
+        toast.show({
+          variant: "info",
+          title: `Collab session: ${collab.state.sessionId}`,
+          message: `Peers: ${collab.state.peers.length + 1}  |  Mode: ${collab.state.mode}  |  Role: ${collab.state.role}`,
+          duration: 6000,
+        })
+      },
+    },
+    {
+      title: "Leave collaboration session",
+      value: "collaborate.leave",
+      category: "Collaborate",
+      slash: { name: "collaborate leave", aliases: ["collab leave"] },
+      enabled: collab.state.connected,
+      onSelect: (dialog) => { collab.disconnect(); dialog.clear() },
+    },
   ])
 
   const revertInfo = createMemo(() => session()?.revert)
@@ -1203,6 +1305,27 @@ export function Session() {
           </Switch>
         </Show>
       </box>
+      <CollabBridge
+        sessionId={route.sessionID}
+        onRemotePrompt={(content) => {
+          // Run a remote peer's prompt directly on the local session WITHOUT
+          // re-broadcasting to the relay (which would cause an infinite bounce loop).
+          if (!content.trim() || !route.sessionID) return
+          const model = local.model.current()
+          if (!model) return
+          sdk.client.session
+            .prompt({
+              sessionID: route.sessionID,
+              ...model,
+              messageID: MessageID.ascending(),
+              agent: local.agent.current().name,
+              model,
+              variant: local.model.variant.current(),
+              parts: [{ id: PartID.ascending(), type: "text", text: content }],
+            })
+            .catch(() => {})
+        }}
+      />
     </context.Provider>
   )
 }
@@ -1448,7 +1571,7 @@ function TextPart(props: { last: boolean; part: TextPart; message: AssistantMess
     <Show when={props.part.text.trim()}>
       <box id={"text-" + props.part.id} paddingLeft={3} marginTop={1} flexShrink={0}>
         <Switch>
-          <Match when={Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+          <Match when={Flag.MERGE_EXPERIMENTAL_MARKDOWN}>
             <markdown
               syntaxStyle={syntax()}
               streaming={true}
@@ -1458,7 +1581,7 @@ function TextPart(props: { last: boolean; part: TextPart; message: AssistantMess
               bg={theme.background}
             />
           </Match>
-          <Match when={!Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+          <Match when={!Flag.MERGE_EXPERIMENTAL_MARKDOWN}>
             <code
               filetype="markdown"
               drawUnstyledText={false}

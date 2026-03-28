@@ -1,36 +1,36 @@
-id = "opencode"
-name = "OpenCode"
+id = "merge"
+name = "Merge"
 description = "The open source coding agent."
 version = "1.3.3"
 schema_version = 1
 authors = ["Anomaly"]
-repository = "https://github.com/anomalyco/opencode"
+repository = "https://github.com/anomalyco/merge"
 
-[agent_servers.opencode]
-name = "OpenCode"
-icon = "./icons/opencode.svg"
+[agent_servers.merge]
+name = "Merge"
+icon = "./icons/merge.svg"
 
-[agent_servers.opencode.targets.darwin-aarch64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.3.3/opencode-darwin-arm64.zip"
-cmd = "./opencode"
+[agent_servers.merge.targets.darwin-aarch64]
+archive = "https://github.com/anomalyco/merge/releases/download/v1.3.3/merge-darwin-arm64.zip"
+cmd = "./merge"
 args = ["acp"]
 
-[agent_servers.opencode.targets.darwin-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.3.3/opencode-darwin-x64.zip"
-cmd = "./opencode"
+[agent_servers.merge.targets.darwin-x86_64]
+archive = "https://github.com/anomalyco/merge/releases/download/v1.3.3/merge-darwin-x64.zip"
+cmd = "./merge"
 args = ["acp"]
 
-[agent_servers.opencode.targets.linux-aarch64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.3.3/opencode-linux-arm64.tar.gz"
-cmd = "./opencode"
+[agent_servers.merge.targets.linux-aarch64]
+archive = "https://github.com/anomalyco/merge/releases/download/v1.3.3/merge-linux-arm64.tar.gz"
+cmd = "./merge"
 args = ["acp"]
 
-[agent_servers.opencode.targets.linux-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.3.3/opencode-linux-x64.tar.gz"
-cmd = "./opencode"
+[agent_servers.merge.targets.linux-x86_64]
+archive = "https://github.com/anomalyco/merge/releases/download/v1.3.3/merge-linux-x64.tar.gz"
+cmd = "./merge"
 args = ["acp"]
 
-[agent_servers.opencode.targets.windows-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.3.3/opencode-windows-x64.zip"
-cmd = "./opencode.exe"
+[agent_servers.merge.targets.windows-x86_64]
+archive = "https://github.com/anomalyco/merge/releases/download/v1.3.3/merge-windows-x64.zip"
+cmd = "./merge.exe"
 args = ["acp"]

@@ -5,7 +5,7 @@ Technical reference for the current TUI plugin system.
 ## Overview
 
 - TUI plugin config lives in `tui.json`.
-- Author package entrypoint is `@opencode-ai/plugin/tui`.
+- Author package entrypoint is `@merge-ai/plugin/tui`.
 - Internal plugins load inside the CLI app the same way external TUI plugins do.
 - Package plugins can be installed from CLI or TUI.
 - v1 plugin modules are target-exclusive: a module can export `server` or `tui`, never both.
@@ -17,9 +17,9 @@ Example:
 
 ```json
 {
-  "$schema": "https://opencode.ai/tui.json",
+  "$schema": "https://merge.ai/tui.json",
   "theme": "smoke-theme",
-  "plugin": ["@acme/opencode-plugin@1.2.3", ["./plugins/demo.tsx", { "label": "demo" }]],
+  "plugin": ["@acme/merge-plugin@1.2.3", ["./plugins/demo.tsx", { "label": "demo" }]],
   "plugin_enabled": {
     "acme.demo": false
   }
@@ -42,14 +42,14 @@ Example:
 
 Package entrypoint:
 
-- Import types from `@opencode-ai/plugin/tui`.
-- `@opencode-ai/plugin` exports `./tui` and declares optional peer deps on `@opentui/core` and `@opentui/solid`.
+- Import types from `@merge-ai/plugin/tui`.
+- `@merge-ai/plugin` exports `./tui` and declares optional peer deps on `@opentui/core` and `@opentui/solid`.
 
 Minimal module shape:
 
 ```tsx
 /** @jsxImportSource @opentui/solid */
-import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
+import type { TuiPlugin, TuiPluginModule } from "@merge-ai/plugin/tui"
 
 const tui: TuiPlugin = async (api, options, meta) => {
   api.command.register(() => [
@@ -100,11 +100,11 @@ Example:
 
 ```json
 {
-  "name": "@acme/opencode-plugin",
+  "name": "@acme/merge-plugin",
   "type": "module",
   "main": "./dist/index.js",
   "engines": {
-    "opencode": "^1.0.0"
+    "merge": "^1.0.0"
   },
   "oc-plugin": [
     ["server", { "custom": true }],
@@ -120,24 +120,24 @@ npm plugins can declare a version compatibility range in `package.json` using th
 ```json
 {
   "engines": {
-    "opencode": "^1.0.0"
+    "merge": "^1.0.0"
   }
 }
 ```
 
-- The value is a semver range checked against the running OpenCode version.
+- The value is a semver range checked against the running Merge version.
 - If the range is not satisfied, the plugin is skipped with a warning and a session error.
-- If `engines.opencode` is absent, no check is performed (backward compatible).
+- If `engines.merge` is absent, no check is performed (backward compatible).
 - File plugins are never checked; only npm package plugins are validated.
 
 - Install flow is shared by CLI and TUI in `src/plugin/install.ts`.
 - Shared helpers are `installPlugin`, `readPluginManifest`, and `patchPluginConfig`.
-- `opencode plugin <module>` and TUI install both run install → manifest read → config patch.
-- Alias: `opencode plug <module>`.
+- `merge plugin <module>` and TUI install both run install → manifest read → config patch.
+- Alias: `merge plug <module>`.
 - `-g` / `--global` writes into the global config dir.
 - Local installs resolve target dir inside `patchPluginConfig`.
-- For local scope, path is `<worktree>/.opencode` only when VCS is git and `worktree !== "/"`; otherwise `<directory>/.opencode`.
-- Root-worktree fallback (`worktree === "/"` uses `<directory>/.opencode`) is covered by regression tests.
+- For local scope, path is `<worktree>/.merge` only when VCS is git and `worktree !== "/"`; otherwise `<directory>/.merge`.
+- Root-worktree fallback (`worktree === "/"` uses `<directory>/.merge`) is covered by regression tests.
 - `patchPluginConfig` applies all declared manifest targets (`server` and/or `tui`) in one call.
 - `patchPluginConfig` returns structured result unions (`ok`, `code`, fields by error kind) instead of custom thrown errors.
 - Without `--force`, an already-configured npm package name is a no-op.
@@ -148,14 +148,14 @@ npm plugins can declare a version compatibility range in `package.json` using th
 - There is no uninstall, list, or update CLI command for external plugins.
 - Local file plugins are configured directly in `tui.json`.
 
-When `plugin` entries exist in a writable `.opencode` dir or `OPENCODE_CONFIG_DIR`, OpenCode installs `@opencode-ai/plugin` into that dir and writes:
+When `plugin` entries exist in a writable `.merge` dir or `MERGE_CONFIG_DIR`, Merge installs `@merge-ai/plugin` into that dir and writes:
 
 - `package.json`
 - `bun.lock`
 - `node_modules/`
 - `.gitignore`
 
-That is what makes local config-scoped plugins able to import `@opencode-ai/plugin/tui`.
+That is what makes local config-scoped plugins able to import `@merge-ai/plugin/tui`.
 
 ## TUI plugin API
 
@@ -267,7 +267,7 @@ Theme install behavior:
 - Relative theme paths are resolved from the plugin root.
 - Theme name is the JSON basename.
 - Install is skipped if that theme name already exists.
-- Local plugins persist installed themes under the local `.opencode/themes` area near the plugin config source.
+- Local plugins persist installed themes under the local `.merge/themes` area near the plugin config source.
 - Global plugins persist installed themes under the global `themes` dir.
 - Invalid or unreadable theme files are ignored.
 
@@ -330,7 +330,7 @@ Metadata is persisted by plugin id.
 
 - Internal TUI plugins load first.
 - External TUI plugins load from `tuiConfig.plugin`.
-- `--pure` / `OPENCODE_PURE` skips external TUI plugins only.
+- `--pure` / `MERGE_PURE` skips external TUI plugins only.
 - External plugin resolution and import are parallel.
 - External plugin activation is sequential to keep command, route, and side-effect order deterministic.
 - File plugins that fail initially are retried once after waiting for config dependency installation.
@@ -380,6 +380,6 @@ The plugin manager is exposed as a command with title `Plugins` and value `plugi
 
 ## Current in-repo examples
 
-- Local smoke plugin: `.opencode/plugins/tui-smoke.tsx`
-- Local smoke config: `.opencode/tui.json`
-- Local smoke theme: `.opencode/plugins/smoke-theme.json`
+- Local smoke plugin: `.merge/plugins/tui-smoke.tsx`
+- Local smoke config: `.merge/tui.json`
+- Local smoke theme: `.merge/plugins/smoke-theme.json`

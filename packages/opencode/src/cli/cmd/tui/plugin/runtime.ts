@@ -8,7 +8,7 @@ import {
   type TuiPluginMeta,
   type TuiPluginStatus,
   type TuiTheme,
-} from "@opencode-ai/plugin/tui"
+} from "@merge-ai/plugin/tui"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -172,9 +172,9 @@ function createThemeInstaller(meta: TuiConfig.PluginMeta, root: string, spec: st
 
     const source_dir = path.dirname(meta.source)
     const local_dir =
-      path.basename(source_dir) === ".opencode"
+      path.basename(source_dir) === ".merge"
         ? path.join(source_dir, "themes")
-        : path.join(source_dir, ".opencode", "themes")
+        : path.join(source_dir, ".merge", "themes")
     const dest_dir = meta.scope === "local" ? local_dir : path.join(Global.Path.config, "themes")
     const dest = path.join(dest_dir, `${theme}.json`)
     if (!(await Filesystem.exists(dest))) {
@@ -676,7 +676,7 @@ async function addExternalPluginEntries(state: RuntimeState, ready: PluginLoad[]
 function defaultPluginMeta(state: RuntimeState): TuiConfig.PluginMeta {
   return {
     scope: "local",
-    source: state.api.state.path.config || path.join(state.directory, ".opencode", "tui.json"),
+    source: state.api.state.path.config || path.join(state.directory, ".merge", "tui.json"),
   }
 }
 
@@ -929,8 +929,8 @@ export namespace TuiPluginRuntime {
       directory: cwd,
       fn: async () => {
         const config = await TuiConfig.get()
-        const plugins = Flag.OPENCODE_PURE ? [] : (config.plugin ?? [])
-        if (Flag.OPENCODE_PURE && config.plugin?.length) {
+        const plugins = Flag.MERGE_PURE ? [] : (config.plugin ?? [])
+        if (Flag.MERGE_PURE && config.plugin?.length) {
           log.info("skipping external tui plugins in pure mode", { count: config.plugin.length })
         }
 

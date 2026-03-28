@@ -11,73 +11,76 @@ function falsy(key: string) {
 }
 
 export namespace Flag {
-  export const OPENCODE_AUTO_SHARE = truthy("OPENCODE_AUTO_SHARE")
-  export const OPENCODE_GIT_BASH_PATH = process.env["OPENCODE_GIT_BASH_PATH"]
-  export const OPENCODE_CONFIG = process.env["OPENCODE_CONFIG"]
-  export declare const OPENCODE_PURE: boolean
-  export declare const OPENCODE_TUI_CONFIG: string | undefined
-  export declare const OPENCODE_CONFIG_DIR: string | undefined
-  export declare const OPENCODE_PLUGIN_META_FILE: string | undefined
-  export const OPENCODE_CONFIG_CONTENT = process.env["OPENCODE_CONFIG_CONTENT"]
-  export const OPENCODE_DISABLE_AUTOUPDATE = truthy("OPENCODE_DISABLE_AUTOUPDATE")
-  export const OPENCODE_ALWAYS_NOTIFY_UPDATE = truthy("OPENCODE_ALWAYS_NOTIFY_UPDATE")
-  export const OPENCODE_DISABLE_PRUNE = truthy("OPENCODE_DISABLE_PRUNE")
-  export const OPENCODE_DISABLE_TERMINAL_TITLE = truthy("OPENCODE_DISABLE_TERMINAL_TITLE")
-  export const OPENCODE_SHOW_TTFD = truthy("OPENCODE_SHOW_TTFD")
-  export const OPENCODE_PERMISSION = process.env["OPENCODE_PERMISSION"]
-  export const OPENCODE_DISABLE_DEFAULT_PLUGINS = truthy("OPENCODE_DISABLE_DEFAULT_PLUGINS")
-  export const OPENCODE_DISABLE_LSP_DOWNLOAD = truthy("OPENCODE_DISABLE_LSP_DOWNLOAD")
-  export const OPENCODE_ENABLE_EXPERIMENTAL_MODELS = truthy("OPENCODE_ENABLE_EXPERIMENTAL_MODELS")
-  export const OPENCODE_DISABLE_AUTOCOMPACT = truthy("OPENCODE_DISABLE_AUTOCOMPACT")
-  export const OPENCODE_DISABLE_MODELS_FETCH = truthy("OPENCODE_DISABLE_MODELS_FETCH")
-  export const OPENCODE_DISABLE_CLAUDE_CODE = truthy("OPENCODE_DISABLE_CLAUDE_CODE")
-  export const OPENCODE_DISABLE_CLAUDE_CODE_PROMPT =
-    OPENCODE_DISABLE_CLAUDE_CODE || truthy("OPENCODE_DISABLE_CLAUDE_CODE_PROMPT")
-  export const OPENCODE_DISABLE_CLAUDE_CODE_SKILLS =
-    OPENCODE_DISABLE_CLAUDE_CODE || truthy("OPENCODE_DISABLE_CLAUDE_CODE_SKILLS")
-  export const OPENCODE_DISABLE_EXTERNAL_SKILLS =
-    OPENCODE_DISABLE_CLAUDE_CODE_SKILLS || truthy("OPENCODE_DISABLE_EXTERNAL_SKILLS")
-  export declare const OPENCODE_DISABLE_PROJECT_CONFIG: boolean
-  export const OPENCODE_FAKE_VCS = process.env["OPENCODE_FAKE_VCS"]
-  export declare const OPENCODE_CLIENT: string
-  export const OPENCODE_SERVER_PASSWORD = process.env["OPENCODE_SERVER_PASSWORD"]
-  export const OPENCODE_SERVER_USERNAME = process.env["OPENCODE_SERVER_USERNAME"]
-  export const OPENCODE_ENABLE_QUESTION_TOOL = truthy("OPENCODE_ENABLE_QUESTION_TOOL")
+  export const MERGE_AUTO_SHARE = truthy("MERGE_AUTO_SHARE")
+  export const MERGE_GIT_BASH_PATH = process.env["MERGE_GIT_BASH_PATH"]
+  export const MERGE_CONFIG = process.env["MERGE_CONFIG"]
+  export declare const MERGE_PURE: boolean
+  export declare const MERGE_TUI_CONFIG: string | undefined
+  export declare const MERGE_CONFIG_DIR: string | undefined
+  export declare const MERGE_PLUGIN_META_FILE: string | undefined
+  export const MERGE_CONFIG_CONTENT = process.env["MERGE_CONFIG_CONTENT"]
+  export const MERGE_DISABLE_AUTOUPDATE = truthy("MERGE_DISABLE_AUTOUPDATE")
+  export const MERGE_ALWAYS_NOTIFY_UPDATE = truthy("MERGE_ALWAYS_NOTIFY_UPDATE")
+  export const MERGE_DISABLE_PRUNE = truthy("MERGE_DISABLE_PRUNE")
+  export const MERGE_DISABLE_TERMINAL_TITLE = truthy("MERGE_DISABLE_TERMINAL_TITLE")
+  export const MERGE_SHOW_TTFD = truthy("MERGE_SHOW_TTFD")
+  export const MERGE_PERMISSION = process.env["MERGE_PERMISSION"]
+  export const MERGE_DISABLE_DEFAULT_PLUGINS = truthy("MERGE_DISABLE_DEFAULT_PLUGINS")
+  export const MERGE_DISABLE_LSP_DOWNLOAD = truthy("MERGE_DISABLE_LSP_DOWNLOAD")
+  export const MERGE_ENABLE_EXPERIMENTAL_MODELS = truthy("MERGE_ENABLE_EXPERIMENTAL_MODELS")
+  export const MERGE_DISABLE_AUTOCOMPACT = truthy("MERGE_DISABLE_AUTOCOMPACT")
+  export const MERGE_DISABLE_MODELS_FETCH = truthy("MERGE_DISABLE_MODELS_FETCH")
+  export const MERGE_DISABLE_CLAUDE_CODE = truthy("MERGE_DISABLE_CLAUDE_CODE")
+  export const MERGE_DISABLE_CLAUDE_CODE_PROMPT =
+    MERGE_DISABLE_CLAUDE_CODE || truthy("MERGE_DISABLE_CLAUDE_CODE_PROMPT")
+  export const MERGE_DISABLE_CLAUDE_CODE_SKILLS =
+    MERGE_DISABLE_CLAUDE_CODE || truthy("MERGE_DISABLE_CLAUDE_CODE_SKILLS")
+  export const MERGE_DISABLE_EXTERNAL_SKILLS =
+    MERGE_DISABLE_CLAUDE_CODE_SKILLS || truthy("MERGE_DISABLE_EXTERNAL_SKILLS")
+  export declare const MERGE_DISABLE_PROJECT_CONFIG: boolean
+  export const MERGE_FAKE_VCS = process.env["MERGE_FAKE_VCS"]
+  export declare const MERGE_CLIENT: string
+  export const MERGE_SERVER_PASSWORD = process.env["MERGE_SERVER_PASSWORD"]
+  export const MERGE_SERVER_USERNAME = process.env["MERGE_SERVER_USERNAME"]
+  export const MERGE_ENABLE_QUESTION_TOOL = truthy("MERGE_ENABLE_QUESTION_TOOL")
+  export const MERGE_RELAY_AUTO = truthy("MERGE_RELAY_AUTO")
+  export const MERGE_RELAY_URL = process.env["MERGE_RELAY_URL"]
+  export const MERGE_RELAY_PORT = process.env["MERGE_RELAY_PORT"]
 
   // Experimental
-  export const OPENCODE_EXPERIMENTAL = truthy("OPENCODE_EXPERIMENTAL")
-  export const OPENCODE_EXPERIMENTAL_FILEWATCHER = Config.boolean("OPENCODE_EXPERIMENTAL_FILEWATCHER").pipe(
+  export const MERGE_EXPERIMENTAL = truthy("MERGE_EXPERIMENTAL")
+  export const MERGE_EXPERIMENTAL_FILEWATCHER = Config.boolean("MERGE_EXPERIMENTAL_FILEWATCHER").pipe(
     Config.withDefault(false),
   )
-  export const OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER = Config.boolean(
-    "OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER",
+  export const MERGE_EXPERIMENTAL_DISABLE_FILEWATCHER = Config.boolean(
+    "MERGE_EXPERIMENTAL_DISABLE_FILEWATCHER",
   ).pipe(Config.withDefault(false))
-  export const OPENCODE_EXPERIMENTAL_ICON_DISCOVERY =
-    OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_ICON_DISCOVERY")
+  export const MERGE_EXPERIMENTAL_ICON_DISCOVERY =
+    MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_ICON_DISCOVERY")
 
-  const copy = process.env["OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
-  export const OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT =
-    copy === undefined ? process.platform === "win32" : truthy("OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT")
-  export const OPENCODE_ENABLE_EXA =
-    truthy("OPENCODE_ENABLE_EXA") || OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_EXA")
-  export const OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS = number("OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS")
-  export const OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX = number("OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX")
-  export const OPENCODE_EXPERIMENTAL_OXFMT = OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_OXFMT")
-  export const OPENCODE_EXPERIMENTAL_LSP_TY = truthy("OPENCODE_EXPERIMENTAL_LSP_TY")
-  export const OPENCODE_EXPERIMENTAL_LSP_TOOL = OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_LSP_TOOL")
-  export const OPENCODE_DISABLE_FILETIME_CHECK = Config.boolean("OPENCODE_DISABLE_FILETIME_CHECK").pipe(
+  const copy = process.env["MERGE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
+  export const MERGE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT =
+    copy === undefined ? process.platform === "win32" : truthy("MERGE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT")
+  export const MERGE_ENABLE_EXA =
+    truthy("MERGE_ENABLE_EXA") || MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_EXA")
+  export const MERGE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS = number("MERGE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS")
+  export const MERGE_EXPERIMENTAL_OUTPUT_TOKEN_MAX = number("MERGE_EXPERIMENTAL_OUTPUT_TOKEN_MAX")
+  export const MERGE_EXPERIMENTAL_OXFMT = MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_OXFMT")
+  export const MERGE_EXPERIMENTAL_LSP_TY = truthy("MERGE_EXPERIMENTAL_LSP_TY")
+  export const MERGE_EXPERIMENTAL_LSP_TOOL = MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_LSP_TOOL")
+  export const MERGE_DISABLE_FILETIME_CHECK = Config.boolean("MERGE_DISABLE_FILETIME_CHECK").pipe(
     Config.withDefault(false),
   )
-  export const OPENCODE_EXPERIMENTAL_PLAN_MODE = OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_PLAN_MODE")
-  export const OPENCODE_EXPERIMENTAL_WORKSPACES = OPENCODE_EXPERIMENTAL || truthy("OPENCODE_EXPERIMENTAL_WORKSPACES")
-  export const OPENCODE_EXPERIMENTAL_MARKDOWN = !falsy("OPENCODE_EXPERIMENTAL_MARKDOWN")
-  export const OPENCODE_MODELS_URL = process.env["OPENCODE_MODELS_URL"]
-  export const OPENCODE_MODELS_PATH = process.env["OPENCODE_MODELS_PATH"]
-  export const OPENCODE_DISABLE_EMBEDDED_WEB_UI = truthy("OPENCODE_DISABLE_EMBEDDED_WEB_UI")
-  export const OPENCODE_DB = process.env["OPENCODE_DB"]
-  export const OPENCODE_DISABLE_CHANNEL_DB = truthy("OPENCODE_DISABLE_CHANNEL_DB")
-  export const OPENCODE_SKIP_MIGRATIONS = truthy("OPENCODE_SKIP_MIGRATIONS")
-  export const OPENCODE_STRICT_CONFIG_DEPS = truthy("OPENCODE_STRICT_CONFIG_DEPS")
+  export const MERGE_EXPERIMENTAL_PLAN_MODE = MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_PLAN_MODE")
+  export const MERGE_EXPERIMENTAL_WORKSPACES = MERGE_EXPERIMENTAL || truthy("MERGE_EXPERIMENTAL_WORKSPACES")
+  export const MERGE_EXPERIMENTAL_MARKDOWN = !falsy("MERGE_EXPERIMENTAL_MARKDOWN")
+  export const MERGE_MODELS_URL = process.env["MERGE_MODELS_URL"]
+  export const MERGE_MODELS_PATH = process.env["MERGE_MODELS_PATH"]
+  export const MERGE_DISABLE_EMBEDDED_WEB_UI = truthy("MERGE_DISABLE_EMBEDDED_WEB_UI")
+  export const MERGE_DB = process.env["MERGE_DB"]
+  export const MERGE_DISABLE_CHANNEL_DB = truthy("MERGE_DISABLE_CHANNEL_DB")
+  export const MERGE_SKIP_MIGRATIONS = truthy("MERGE_SKIP_MIGRATIONS")
+  export const MERGE_STRICT_CONFIG_DEPS = truthy("MERGE_STRICT_CONFIG_DEPS")
 
   function number(key: string) {
     const value = process.env[key]
@@ -87,67 +90,67 @@ export namespace Flag {
   }
 }
 
-// Dynamic getter for OPENCODE_DISABLE_PROJECT_CONFIG
+// Dynamic getter for MERGE_DISABLE_PROJECT_CONFIG
 // This must be evaluated at access time, not module load time,
 // because external tooling may set this env var at runtime
-Object.defineProperty(Flag, "OPENCODE_DISABLE_PROJECT_CONFIG", {
+Object.defineProperty(Flag, "MERGE_DISABLE_PROJECT_CONFIG", {
   get() {
-    return truthy("OPENCODE_DISABLE_PROJECT_CONFIG")
+    return truthy("MERGE_DISABLE_PROJECT_CONFIG")
   },
   enumerable: true,
   configurable: false,
 })
 
-// Dynamic getter for OPENCODE_TUI_CONFIG
+// Dynamic getter for MERGE_TUI_CONFIG
 // This must be evaluated at access time, not module load time,
 // because tests and external tooling may set this env var at runtime
-Object.defineProperty(Flag, "OPENCODE_TUI_CONFIG", {
+Object.defineProperty(Flag, "MERGE_TUI_CONFIG", {
   get() {
-    return process.env["OPENCODE_TUI_CONFIG"]
+    return process.env["MERGE_TUI_CONFIG"]
   },
   enumerable: true,
   configurable: false,
 })
 
-// Dynamic getter for OPENCODE_CONFIG_DIR
+// Dynamic getter for MERGE_CONFIG_DIR
 // This must be evaluated at access time, not module load time,
 // because external tooling may set this env var at runtime
-Object.defineProperty(Flag, "OPENCODE_CONFIG_DIR", {
+Object.defineProperty(Flag, "MERGE_CONFIG_DIR", {
   get() {
-    return process.env["OPENCODE_CONFIG_DIR"]
+    return process.env["MERGE_CONFIG_DIR"]
   },
   enumerable: true,
   configurable: false,
 })
 
-// Dynamic getter for OPENCODE_PURE
+// Dynamic getter for MERGE_PURE
 // This must be evaluated at access time, not module load time,
 // because the CLI can set this flag at runtime
-Object.defineProperty(Flag, "OPENCODE_PURE", {
+Object.defineProperty(Flag, "MERGE_PURE", {
   get() {
-    return truthy("OPENCODE_PURE")
+    return truthy("MERGE_PURE")
   },
   enumerable: true,
   configurable: false,
 })
 
-// Dynamic getter for OPENCODE_PLUGIN_META_FILE
+// Dynamic getter for MERGE_PLUGIN_META_FILE
 // This must be evaluated at access time, not module load time,
 // because tests and external tooling may set this env var at runtime
-Object.defineProperty(Flag, "OPENCODE_PLUGIN_META_FILE", {
+Object.defineProperty(Flag, "MERGE_PLUGIN_META_FILE", {
   get() {
-    return process.env["OPENCODE_PLUGIN_META_FILE"]
+    return process.env["MERGE_PLUGIN_META_FILE"]
   },
   enumerable: true,
   configurable: false,
 })
 
-// Dynamic getter for OPENCODE_CLIENT
+// Dynamic getter for MERGE_CLIENT
 // This must be evaluated at access time, not module load time,
 // because some commands override the client at runtime
-Object.defineProperty(Flag, "OPENCODE_CLIENT", {
+Object.defineProperty(Flag, "MERGE_CLIENT", {
   get() {
-    return process.env["OPENCODE_CLIENT"] ?? "cli"
+    return process.env["MERGE_CLIENT"] ?? "cli"
   },
   enumerable: true,
   configurable: false,

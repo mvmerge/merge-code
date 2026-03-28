@@ -6,7 +6,7 @@ import { Filesystem } from "@/util/filesystem"
 import { isRecord } from "@/util/record"
 
 // Old npm package names for plugins that are now built-in
-export const DEPRECATED_PLUGIN_PACKAGES = ["opencode-openai-codex-auth", "opencode-copilot-auth"]
+export const DEPRECATED_PLUGIN_PACKAGES = ["merge-openai-codex-auth", "merge-copilot-auth"]
 
 export function isDeprecatedPlugin(spec: string) {
   return DEPRECATED_PLUGIN_PACKAGES.some((pkg) => spec.includes(pkg))
@@ -89,16 +89,16 @@ export async function resolvePathPluginTarget(spec: string) {
   return pathToFileURL(path.resolve(file, pkg.main)).href
 }
 
-export async function checkPluginCompatibility(target: string, opencodeVersion: string) {
-  if (!semver.valid(opencodeVersion) || semver.major(opencodeVersion) === 0) return
+export async function checkPluginCompatibility(target: string, mergeVersion: string) {
+  if (!semver.valid(mergeVersion) || semver.major(mergeVersion) === 0) return
   const pkg = await readPluginPackage(target).catch(() => undefined)
   if (!pkg) return
   const engines = pkg.json.engines
   if (!isRecord(engines)) return
-  const range = engines.opencode
+  const range = engines.merge
   if (typeof range !== "string") return
-  if (!semver.satisfies(opencodeVersion, range)) {
-    throw new Error(`Plugin requires opencode ${range} but running ${opencodeVersion}`)
+  if (!semver.satisfies(mergeVersion, range)) {
+    throw new Error(`Plugin requires merge ${range} but running ${mergeVersion}`)
   }
 }
 

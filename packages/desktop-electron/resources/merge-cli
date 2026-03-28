@@ -1,0 +1,3 @@
+#!/bin/sh
+# Dev sidecar wrapper — runs merge from source via bun
+exec bun run --conditions=browser "/Users/rouler4wd/Downloads/merge/packages/opencode/src/index.ts" "$@"

@@ -524,7 +524,10 @@ export function Autocomplete(props: {
         // Check for "/" at position 0 - reopen slash commands
         if (value.startsWith("/") && !value.slice(0, offset).match(/\s/)) {
           show("/")
-          setStore("index", 0)
+          setStore({
+            index: 0,
+            selected: 0,
+          })
           return
         }
 

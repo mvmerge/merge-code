@@ -1,5 +1,5 @@
-import type { AuthOAuthResult, Hooks } from "@opencode-ai/plugin"
-import { NamedError } from "@opencode-ai/util/error"
+import type { AuthOAuthResult, Hooks } from "@merge-ai/plugin"
+import { NamedError } from "@merge-ai/util/error"
 import { Auth } from "@/auth"
 import { InstanceState } from "@/effect/instance-state"
 import { makeRuntime } from "@/effect/run-service"
@@ -109,7 +109,7 @@ export namespace ProviderAuth {
     pending: Map<ProviderID, AuthOAuthResult>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/ProviderAuth") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/ProviderAuth") {}
 
   export const layer = Layer.effect(
     Service,

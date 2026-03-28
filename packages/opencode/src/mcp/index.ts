@@ -11,7 +11,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js"
 import { Config } from "../config/config"
 import { Log } from "../util/log"
-import { NamedError } from "@opencode-ai/util/error"
+import { NamedError } from "@merge-ai/util/error"
 import z from "zod/v4"
 import { Instance } from "../project/instance"
 import { Installation } from "../installation"
@@ -239,7 +239,7 @@ export namespace MCP {
     readonly getAuthStatus: (mcpName: string) => Effect.Effect<AuthStatus>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/MCP") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/MCP") {}
 
   export const layer = Layer.effect(
     Service,
@@ -260,7 +260,7 @@ export namespace MCP {
           (t) =>
             Effect.tryPromise({
               try: () => {
-                const client = new Client({ name: "opencode", version: Installation.VERSION })
+                const client = new Client({ name: "merge", version: Installation.VERSION })
                 return withTimeout(client.connect(t), timeout).then(() => client)
               },
               catch: (e) => (e instanceof Error ? e : new Error(String(e))),
@@ -345,7 +345,7 @@ export namespace MCP {
                   return bus
                     .publish(TuiEvent.ToastShow, {
                       title: "MCP Authentication Required",
-                      message: `Server "${key}" requires authentication. Run: opencode mcp auth ${key}`,
+                      message: `Server "${key}" requires authentication. Run: merge mcp auth ${key}`,
                       variant: "warning",
                       duration: 8000,
                     })
@@ -387,7 +387,7 @@ export namespace MCP {
           cwd,
           env: {
             ...process.env,
-            ...(cmd === "opencode" ? { BUN_BE_BUN: "1" } : {}),
+            ...(cmd === "merge" ? { BUN_BE_BUN: "1" } : {}),
             ...mcp.environment,
           },
         })
@@ -743,7 +743,7 @@ export namespace MCP {
 
         return yield* Effect.tryPromise({
           try: () => {
-            const client = new Client({ name: "opencode", version: Installation.VERSION })
+            const client = new Client({ name: "merge", version: Installation.VERSION })
             return client.connect(transport).then(() => ({ authorizationUrl: "", oauthState }))
           },
           catch: (error) => error,

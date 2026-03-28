@@ -62,9 +62,9 @@ async function load(): Promise<Data> {
       const invalidThemePath = path.join(dir, invalidThemeFile)
       const globalThemePath = path.join(dir, globalThemeFile)
       const preloadedThemePath = path.join(dir, preloadedThemeFile)
-      const localDest = path.join(dir, ".opencode", "themes", localThemeFile)
+      const localDest = path.join(dir, ".merge", "themes", localThemeFile)
       const globalDest = path.join(Global.Path.config, "themes", globalThemeFile)
-      const preloadedDest = path.join(dir, ".opencode", "themes", preloadedThemeFile)
+      const preloadedDest = path.join(dir, ".merge", "themes", preloadedThemeFile)
       const fnMarker = path.join(dir, "function-called.txt")
       const localMarker = path.join(dir, "local-called.json")
       const invalidMarker = path.join(dir, "invalid-called.json")
@@ -385,7 +385,7 @@ export default {
       .then(() => true)
       .catch(() => false)
     const leaked_global_to_local = await fs
-      .stat(path.join(tmp.path, ".opencode", "themes", tmp.extra.globalThemeFile))
+      .stat(path.join(tmp.path, ".merge", "themes", tmp.extra.globalThemeFile))
       .then(() => true)
       .catch(() => false)
 
@@ -461,7 +461,7 @@ test("continues loading when a plugin is missing config metadata", async () => {
     },
   })
 
-  process.env.OPENCODE_PLUGIN_META_FILE = path.join(tmp.path, "plugin-meta.json")
+  process.env.MERGE_PLUGIN_META_FILE = path.join(tmp.path, "plugin-meta.json")
   const get = spyOn(TuiConfig, "get").mockResolvedValue({
     plugin: [
       [tmp.extra.badSpec, { marker: path.join(tmp.path, "bad.txt") }],
@@ -489,7 +489,7 @@ test("continues loading when a plugin is missing config metadata", async () => {
     cwd.mockRestore()
     get.mockRestore()
     wait.mockRestore()
-    delete process.env.OPENCODE_PLUGIN_META_FILE
+    delete process.env.MERGE_PLUGIN_META_FILE
   }
 })
 

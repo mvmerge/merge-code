@@ -1,6 +1,7 @@
 import { BoxRenderable, TextareaRenderable, MouseEvent, PasteEvent, decodePasteBytes, t, dim, fg } from "@opentui/core"
 import { createEffect, createMemo, type JSX, onMount, createSignal, onCleanup, on, Show, Switch, Match } from "solid-js"
 import "opentui-spinner/solid"
+import { useCollab } from "@tui/context/collab"
 import path from "path"
 import { Filesystem } from "@/util/filesystem"
 import { useLocal } from "@tui/context/local"
@@ -22,7 +23,7 @@ import { useKeyboard, useRenderer } from "@opentui/solid"
 import { Editor } from "@tui/util/editor"
 import { useExit } from "../../context/exit"
 import { Clipboard } from "../../util/clipboard"
-import type { AssistantMessage, FilePart } from "@opencode-ai/sdk/v2"
+import type { AssistantMessage, FilePart } from "@merge-ai/sdk/v2"
 import { TuiEvent } from "../../event"
 import { iife } from "@/util/iife"
 import { Locale } from "@/util/locale"
@@ -72,6 +73,7 @@ export function Prompt(props: PromptProps) {
   const keybind = useKeybind()
   const local = useLocal()
   const sdk = useSDK()
+  const collab = useCollab()
   const route = useRoute()
   const sync = useSync()
   const dialog = useDialog()
@@ -568,6 +570,11 @@ export function Prompt(props: PromptProps) {
     if (props.disabled) return
     if (autocomplete?.visible) return
     if (!store.prompt.input) return
+    // Collab mode enforcement: observers cannot prompt in copilot mode
+    if (collab.state.connected && collab.state.mode === "copilot" && collab.state.role === "observer") {
+      toast.show({ variant: "warning", message: "Copilot mode: only the driver can send prompts", duration: 3000 })
+      return
+    }
     const trimmed = store.prompt.input.trim()
     if (trimmed === "exit" || trimmed === "quit" || trimmed === ":q") {
       exit()
@@ -685,6 +692,16 @@ export function Prompt(props: PromptProps) {
           ],
         })
         .catch(() => {})
+
+      // Broadcast prompt to collaboration peers
+      if (collab.state.connected) {
+        collab.sendEvent({
+          type: "prompt",
+          sessionId: collab.state.sessionId,
+          peerId: collab.state.peerId ?? "local",
+          content: inputText,
+        })
+      }
     }
     history.append({
       ...store.prompt,

@@ -1,6 +1,6 @@
-# OpenCode Desktop
+# Merge Desktop
 
-Native OpenCode desktop app, built with Tauri v2.
+Native Merge desktop app, built with Tauri v2.
 
 ## Development
 

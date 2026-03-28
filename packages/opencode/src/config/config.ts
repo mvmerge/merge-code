@@ -8,7 +8,7 @@ import { ModelsDev } from "../provider/models"
 import { mergeDeep, pipe, unique } from "remeda"
 import { Global } from "../global"
 import fsNode from "fs/promises"
-import { NamedError } from "@opencode-ai/util/error"
+import { NamedError } from "@merge-ai/util/error"
 import { Flag } from "../flag/flag"
 import { Auth } from "../auth"
 import { Env } from "../env"
@@ -59,16 +59,16 @@ export namespace Config {
   function systemManagedConfigDir(): string {
     switch (process.platform) {
       case "darwin":
-        return "/Library/Application Support/opencode"
+        return "/Library/Application Support/merge"
       case "win32":
-        return path.join(process.env.ProgramData || "C:\\ProgramData", "opencode")
+        return path.join(process.env.ProgramData || "C:\\ProgramData", "merge")
       default:
-        return "/etc/opencode"
+        return "/etc/merge"
     }
   }
 
   export function managedConfigDir() {
-    return process.env.OPENCODE_TEST_MANAGED_CONFIG_DIR || systemManagedConfigDir()
+    return process.env.MERGE_TEST_MANAGED_CONFIG_DIR || systemManagedConfigDir()
   }
 
   const managedDir = managedConfigDir()
@@ -115,7 +115,7 @@ export namespace Config {
     }))
     json.dependencies = {
       ...json.dependencies,
-      "@opencode-ai/plugin": target,
+      "@merge-ai/plugin": target,
     }
     await Filesystem.writeJson(pkg, json)
 
@@ -153,7 +153,7 @@ export namespace Config {
           stdout: err.stdout.toString(),
           stderr: err.stderr.toString(),
         }
-        if (Flag.OPENCODE_STRICT_CONFIG_DEPS) {
+        if (Flag.MERGE_STRICT_CONFIG_DEPS && !Installation.isLocal()) {
           log.error("failed to install dependencies", detail)
           throw err
         }
@@ -161,7 +161,7 @@ export namespace Config {
         return
       }
 
-      if (Flag.OPENCODE_STRICT_CONFIG_DEPS) {
+      if (Flag.MERGE_STRICT_CONFIG_DEPS && !Installation.isLocal()) {
         log.error("failed to install dependencies", { dir, error: err })
         throw err
       }
@@ -187,7 +187,12 @@ export namespace Config {
       return false
     }
 
-    const mod = path.join(dir, "node_modules", "@opencode-ai", "plugin")
+    if (Installation.isLocal()) {
+      log.debug("skipping managed plugin dependency install in local development", { dir })
+      return false
+    }
+
+    const mod = path.join(dir, "node_modules", "@merge-ai", "plugin")
     if (!existsSync(mod)) return true
 
     const pkg = path.join(dir, "package.json")
@@ -196,16 +201,16 @@ export namespace Config {
 
     const parsed = await Filesystem.readJson<{ dependencies?: Record<string, string> }>(pkg).catch(() => null)
     const dependencies = parsed?.dependencies ?? {}
-    const depVersion = dependencies["@opencode-ai/plugin"]
+    const depVersion = dependencies["@merge-ai/plugin"]
     if (!depVersion) return true
 
     const targetVersion = Installation.isLocal() ? "latest" : Installation.VERSION
     if (targetVersion === "latest") {
       if (!online()) return false
-      const stale = await PackageRegistry.isOutdated("@opencode-ai/plugin", depVersion, dir)
+      const stale = await PackageRegistry.isOutdated("@merge-ai/plugin", depVersion, dir)
       if (!stale) return false
       log.info("Cached version is outdated, proceeding with install", {
-        pkg: "@opencode-ai/plugin",
+        pkg: "@merge-ai/plugin",
         cachedVersion: depVersion,
       })
       return true
@@ -247,7 +252,7 @@ export namespace Config {
       })
       if (!md) continue
 
-      const patterns = ["/.opencode/command/", "/.opencode/commands/", "/command/", "/commands/"]
+      const patterns = ["/.merge/command/", "/.merge/commands/", "/command/", "/commands/"]
       const file = rel(item, patterns) ?? path.basename(item)
       const name = trim(file)
 
@@ -286,7 +291,7 @@ export namespace Config {
       })
       if (!md) continue
 
-      const patterns = ["/.opencode/agent/", "/.opencode/agents/", "/agent/", "/agents/"]
+      const patterns = ["/.merge/agent/", "/.merge/agents/", "/agent/", "/agents/"]
       const file = rel(item, patterns) ?? path.basename(item)
       const agentName = trim(file)
 
@@ -399,9 +404,9 @@ export namespace Config {
    * Deduplicates plugins by name, with later entries (higher priority) winning.
    * Priority order (highest to lowest):
    * 1. Local plugin/ directory
-   * 2. Local opencode.json
+   * 2. Local merge.json
    * 3. Global plugin/ directory
-   * 4. Global opencode.json
+   * 4. Global merge.json
    *
    * Since plugins are added in low-to-high priority order,
    * we reverse, deduplicate (keeping first occurrence), then restore order.
@@ -824,7 +829,7 @@ export namespace Config {
       port: z.number().int().positive().optional().describe("Port to listen on"),
       hostname: z.string().optional().describe("Hostname to listen on"),
       mdns: z.boolean().optional().describe("Enable mDNS service discovery"),
-      mdnsDomain: z.string().optional().describe("Custom domain name for mDNS service (default: opencode.local)"),
+      mdnsDomain: z.string().optional().describe("Custom domain name for mDNS service (default: merge.local)"),
       cors: z.array(z.string()).optional().describe("Additional domains to allow for CORS"),
     })
     .strict()
@@ -902,11 +907,11 @@ export namespace Config {
     .object({
       $schema: z.string().optional().describe("JSON schema reference for configuration validation"),
       logLevel: Log.Level.optional().describe("Log level"),
-      server: Server.optional().describe("Server configuration for opencode serve and web commands"),
+      server: Server.optional().describe("Server configuration for merge serve and web commands"),
       command: z
         .record(z.string(), Command)
         .optional()
-        .describe("Command configuration, see https://opencode.ai/docs/commands"),
+        .describe("Command configuration, see https://merge.ai/docs/commands"),
       skills: Skills.optional().describe("Additional skill folder paths"),
       watcher: z
         .object({
@@ -978,7 +983,7 @@ export namespace Config {
         })
         .catchall(Agent)
         .optional()
-        .describe("Agent configuration, see https://opencode.ai/docs/agents"),
+        .describe("Agent configuration, see https://merge.ai/docs/agents"),
       provider: z
         .record(z.string(), Provider)
         .optional()
@@ -1113,10 +1118,10 @@ export namespace Config {
     readonly waitForDependencies: () => Effect.Effect<void>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/Config") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/Config") {}
 
   function globalConfigFile() {
-    const candidates = ["opencode.jsonc", "opencode.json", "config.json"].map((file) =>
+    const candidates = ["merge.jsonc", "merge.json", "config.json"].map((file) =>
       path.join(Global.Path.config, file),
     )
     for (const file of candidates) {
@@ -1227,15 +1232,15 @@ export namespace Config {
             delete copy.theme
             delete copy.keybinds
             delete copy.tui
-            log.warn("tui keys in opencode config are deprecated; move them to tui.json", { path: source })
+            log.warn("tui keys in merge config are deprecated; move them to tui.json", { path: source })
             return copy
           })()
 
           const parsed = Info.safeParse(normalized)
           if (parsed.success) {
             if (!parsed.data.$schema && isFile) {
-              parsed.data.$schema = "https://opencode.ai/config.json"
-              const updated = original.replace(/^\s*\{/, '{\n  "$schema": "https://opencode.ai/config.json",')
+              parsed.data.$schema = "https://merge.ai/config.json"
+              const updated = original.replace(/^\s*\{/, '{\n  "$schema": "https://merge.ai/config.json",')
               yield* fs.writeFileString(options.path, updated).pipe(Effect.catch(() => Effect.void))
             }
             const data = parsed.data
@@ -1265,8 +1270,8 @@ export namespace Config {
           let result: Info = pipe(
             {},
             mergeDeep(yield* loadFile(path.join(Global.Path.config, "config.json"))),
-            mergeDeep(yield* loadFile(path.join(Global.Path.config, "opencode.json"))),
-            mergeDeep(yield* loadFile(path.join(Global.Path.config, "opencode.jsonc"))),
+            mergeDeep(yield* loadFile(path.join(Global.Path.config, "merge.json"))),
+            mergeDeep(yield* loadFile(path.join(Global.Path.config, "merge.jsonc"))),
           )
 
           const legacy = path.join(Global.Path.config, "config")
@@ -1276,7 +1281,7 @@ export namespace Config {
                 .then(async (mod) => {
                   const { provider, model, ...rest } = mod.default
                   if (provider && model) result.model = `${provider}/${model}`
-                  result["$schema"] = "https://opencode.ai/config.json"
+                  result["$schema"] = "https://merge.ai/config.json"
                   result = mergeDeep(result, rest)
                   await fsNode.writeFile(path.join(Global.Path.config, "config.json"), JSON.stringify(result, null, 2))
                   await fsNode.unlink(legacy)
@@ -1310,19 +1315,19 @@ export namespace Config {
             if (value.type === "wellknown") {
               const url = key.replace(/\/+$/, "")
               process.env[value.key] = value.token
-              log.debug("fetching remote config", { url: `${url}/.well-known/opencode` })
-              const response = yield* Effect.promise(() => fetch(`${url}/.well-known/opencode`))
+              log.debug("fetching remote config", { url: `${url}/.well-known/merge` })
+              const response = yield* Effect.promise(() => fetch(`${url}/.well-known/merge`))
               if (!response.ok) {
                 throw new Error(`failed to fetch remote config from ${url}: ${response.status}`)
               }
               const wellknown = (yield* Effect.promise(() => response.json())) as any
               const remoteConfig = wellknown.config ?? {}
-              if (!remoteConfig.$schema) remoteConfig.$schema = "https://opencode.ai/config.json"
+              if (!remoteConfig.$schema) remoteConfig.$schema = "https://merge.ai/config.json"
               result = mergeConfigConcatArrays(
                 result,
                 yield* loadConfig(JSON.stringify(remoteConfig), {
-                  dir: path.dirname(`${url}/.well-known/opencode`),
-                  source: `${url}/.well-known/opencode`,
+                  dir: path.dirname(`${url}/.well-known/merge`),
+                  source: `${url}/.well-known/merge`,
                 }),
               )
               log.debug("loaded remote config from well-known", { url })
@@ -1331,14 +1336,14 @@ export namespace Config {
 
           result = mergeConfigConcatArrays(result, yield* getGlobal())
 
-          if (Flag.OPENCODE_CONFIG) {
-            result = mergeConfigConcatArrays(result, yield* loadFile(Flag.OPENCODE_CONFIG))
-            log.debug("loaded custom config", { path: Flag.OPENCODE_CONFIG })
+          if (Flag.MERGE_CONFIG) {
+            result = mergeConfigConcatArrays(result, yield* loadFile(Flag.MERGE_CONFIG))
+            log.debug("loaded custom config", { path: Flag.MERGE_CONFIG })
           }
 
-          if (!Flag.OPENCODE_DISABLE_PROJECT_CONFIG) {
+          if (!Flag.MERGE_DISABLE_PROJECT_CONFIG) {
             for (const file of yield* Effect.promise(() =>
-              ConfigPaths.projectFiles("opencode", ctx.directory, ctx.worktree),
+              ConfigPaths.projectFiles("merge", ctx.directory, ctx.worktree),
             )) {
               result = mergeConfigConcatArrays(result, yield* loadFile(file))
             }
@@ -1350,15 +1355,15 @@ export namespace Config {
 
           const directories = yield* Effect.promise(() => ConfigPaths.directories(ctx.directory, ctx.worktree))
 
-          if (Flag.OPENCODE_CONFIG_DIR) {
-            log.debug("loading config from OPENCODE_CONFIG_DIR", { path: Flag.OPENCODE_CONFIG_DIR })
+          if (Flag.MERGE_CONFIG_DIR) {
+            log.debug("loading config from MERGE_CONFIG_DIR", { path: Flag.MERGE_CONFIG_DIR })
           }
 
           const deps: Promise<void>[] = []
 
           for (const dir of unique(directories)) {
-            if (dir.endsWith(".opencode") || dir === Flag.OPENCODE_CONFIG_DIR) {
-              for (const file of ["opencode.jsonc", "opencode.json"]) {
+            if (dir.endsWith(".merge") || dir === Flag.MERGE_CONFIG_DIR) {
+              for (const file of ["merge.jsonc", "merge.json"]) {
                 log.debug(`loading config from ${path.join(dir, file)}`)
                 result = mergeConfigConcatArrays(result, yield* loadFile(path.join(dir, file)))
                 result.agent ??= {}
@@ -1382,15 +1387,15 @@ export namespace Config {
             result.plugin.push(...(yield* Effect.promise(() => loadPlugin(dir))))
           }
 
-          if (process.env.OPENCODE_CONFIG_CONTENT) {
+          if (process.env.MERGE_CONFIG_CONTENT) {
             result = mergeConfigConcatArrays(
               result,
-              yield* loadConfig(process.env.OPENCODE_CONFIG_CONTENT, {
+              yield* loadConfig(process.env.MERGE_CONFIG_CONTENT, {
                 dir: ctx.directory,
-                source: "OPENCODE_CONFIG_CONTENT",
+                source: "MERGE_CONFIG_CONTENT",
               }),
             )
-            log.debug("loaded custom config from OPENCODE_CONFIG_CONTENT")
+            log.debug("loaded custom config from MERGE_CONFIG_CONTENT")
           }
 
           const active = Option.getOrUndefined(yield* accountSvc.active().pipe(Effect.orDie))
@@ -1402,8 +1407,8 @@ export namespace Config {
               )
               const token = Option.getOrUndefined(tokenOpt)
               if (token) {
-                process.env["OPENCODE_CONSOLE_TOKEN"] = token
-                Env.set("OPENCODE_CONSOLE_TOKEN", token)
+                process.env["MERGE_CONSOLE_TOKEN"] = token
+                Env.set("MERGE_CONSOLE_TOKEN", token)
               }
 
               const config = Option.getOrUndefined(configOpt)
@@ -1427,7 +1432,7 @@ export namespace Config {
           }
 
           if (existsSync(managedDir)) {
-            for (const file of ["opencode.jsonc", "opencode.json"]) {
+            for (const file of ["merge.jsonc", "merge.json"]) {
               result = mergeConfigConcatArrays(result, yield* loadFile(path.join(managedDir, file)))
             }
           }
@@ -1441,8 +1446,8 @@ export namespace Config {
             })
           }
 
-          if (Flag.OPENCODE_PERMISSION) {
-            result.permission = mergeDeep(result.permission ?? {}, JSON.parse(Flag.OPENCODE_PERMISSION))
+          if (Flag.MERGE_PERMISSION) {
+            result.permission = mergeDeep(result.permission ?? {}, JSON.parse(Flag.MERGE_PERMISSION))
           }
 
           if (result.tools) {
@@ -1464,10 +1469,10 @@ export namespace Config {
             result.share = "auto"
           }
 
-          if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) {
+          if (Flag.MERGE_DISABLE_AUTOCOMPACT) {
             result.compaction = { ...result.compaction, auto: false }
           }
-          if (Flag.OPENCODE_DISABLE_PRUNE) {
+          if (Flag.MERGE_DISABLE_PRUNE) {
             result.compaction = { ...result.compaction, prune: false }
           }
 

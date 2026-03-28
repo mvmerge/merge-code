@@ -1,13 +1,13 @@
 import { Component, Show, createMemo, createResource, onMount, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Button } from "@opencode-ai/ui/button"
-import { Icon } from "@opencode-ai/ui/icon"
-import { Select } from "@opencode-ai/ui/select"
-import { Switch } from "@opencode-ai/ui/switch"
-import { TextField } from "@opencode-ai/ui/text-field"
-import { Tooltip } from "@opencode-ai/ui/tooltip"
-import { useTheme, type ColorScheme } from "@opencode-ai/ui/theme/context"
-import { showToast } from "@opencode-ai/ui/toast"
+import { Button } from "@merge-ai/ui/button"
+import { Icon } from "@merge-ai/ui/icon"
+import { Select } from "@merge-ai/ui/select"
+import { Switch } from "@merge-ai/ui/switch"
+import { TextField } from "@merge-ai/ui/text-field"
+import { Tooltip } from "@merge-ai/ui/tooltip"
+import { useTheme, type ColorScheme } from "@merge-ai/ui/theme/context"
+import { showToast } from "@merge-ai/ui/toast"
 import { useLanguage } from "@/context/language"
 import { usePlatform } from "@/context/platform"
 import {
@@ -296,7 +296,7 @@ export const SettingsGeneral: Component = () => {
           description={
             <>
               {language.t("settings.general.row.theme.description")}{" "}
-              <Link href="https://opencode.ai/docs/themes/">{language.t("common.learnMore")}</Link>
+              <Link href="https://merge.ai/docs/themes/">{language.t("common.learnMore")}</Link>
             </>
           }
         >

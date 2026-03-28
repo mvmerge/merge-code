@@ -3,7 +3,7 @@ import path from "path"
 import { pathToFileURL } from "url"
 import z from "zod"
 import { Effect, Layer, ServiceMap } from "effect"
-import { NamedError } from "@opencode-ai/util/error"
+import { NamedError } from "@merge-ai/util/error"
 import type { Agent } from "@/agent/agent"
 import { Bus } from "@/bus"
 import { InstanceState } from "@/effect/instance-state"
@@ -22,7 +22,7 @@ export namespace Skill {
   const log = Log.create({ service: "skill" })
   const EXTERNAL_DIRS = [".claude", ".agents"]
   const EXTERNAL_SKILL_PATTERN = "skills/**/SKILL.md"
-  const OPENCODE_SKILL_PATTERN = "{skill,skills}/**/SKILL.md"
+  const MERGE_SKILL_PATTERN = "{skill,skills}/**/SKILL.md"
   const SKILL_PATTERN = "**/SKILL.md"
 
   export const Info = z.object({
@@ -142,7 +142,7 @@ export namespace Skill {
     directory: string,
     worktree: string,
   ) {
-    if (!Flag.OPENCODE_DISABLE_EXTERNAL_SKILLS) {
+    if (!Flag.MERGE_DISABLE_EXTERNAL_SKILLS) {
       for (const dir of EXTERNAL_DIRS) {
         const root = path.join(Global.Path.home, dir)
         const isDir = yield* Effect.promise(() => Filesystem.isDir(root))
@@ -169,7 +169,7 @@ export namespace Skill {
 
     const configDirs = yield* config.directories()
     for (const dir of configDirs) {
-      yield* scan(state, bus, dir, OPENCODE_SKILL_PATTERN)
+      yield* scan(state, bus, dir, MERGE_SKILL_PATTERN)
     }
 
     const cfg = yield* config.get()
@@ -196,7 +196,7 @@ export namespace Skill {
     log.info("init", { count: Object.keys(state.skills).length })
   })
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/Skill") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/Skill") {}
 
   export const layer: Layer.Layer<Service, never, Discovery.Service | Config.Service | Bus.Service> = Layer.effect(
     Service,

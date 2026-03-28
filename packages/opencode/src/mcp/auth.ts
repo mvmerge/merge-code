@@ -49,7 +49,7 @@ export namespace McpAuth {
     readonly isTokenExpired: (mcpName: string) => Effect.Effect<boolean | null>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/McpAuth") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/McpAuth") {}
 
   export const layer = Layer.effect(
     Service,

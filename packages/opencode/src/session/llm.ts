@@ -42,7 +42,7 @@ export namespace LLM {
     readonly stream: (input: StreamInput) => Stream.Stream<Event, unknown>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/LLM") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/LLM") {}
 
   export const layer = Layer.effect(
     Service,
@@ -209,7 +209,7 @@ export namespace LLM {
     }
 
     // Wire up toolExecutor for DWS workflow models so that tool calls
-    // from the workflow service are executed via opencode's tool system
+    // from the workflow service are executed via merge's tool system
     // and results sent back over the WebSocket.
     if (language instanceof GitLabWorkflowLanguageModel) {
       const workflowModel = language
@@ -274,15 +274,15 @@ export namespace LLM {
       maxOutputTokens,
       abortSignal: input.abort,
       headers: {
-        ...(input.model.providerID.startsWith("opencode")
+        ...(input.model.providerID.startsWith("merge")
           ? {
-              "x-opencode-project": Instance.project.id,
-              "x-opencode-session": input.sessionID,
-              "x-opencode-request": input.user.id,
-              "x-opencode-client": Flag.OPENCODE_CLIENT,
+              "x-merge-project": Instance.project.id,
+              "x-merge-session": input.sessionID,
+              "x-merge-request": input.user.id,
+              "x-merge-client": Flag.MERGE_CLIENT,
             }
           : {
-              "User-Agent": `opencode/${Installation.VERSION}`,
+              "User-Agent": `merge/${Installation.VERSION}`,
             }),
         ...input.model.headers,
         ...headers,

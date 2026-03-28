@@ -39,7 +39,7 @@ export namespace Vcs {
     current: string | undefined
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/Vcs") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/Vcs") {}
 
   export const layer: Layer.Layer<Service, never, Bus.Service | ChildProcessSpawner.ChildProcessSpawner> = Layer.effect(
     Service,

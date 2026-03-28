@@ -2,7 +2,7 @@ import { Effect, ScopedCache, Scope } from "effect"
 import { Instance, type InstanceContext } from "@/project/instance"
 import { registerDisposer } from "./instance-registry"
 
-const TypeId = "~opencode/InstanceState"
+const TypeId = "~merge/InstanceState"
 
 export interface InstanceState<A, E = never, R = never> {
   readonly [TypeId]: typeof TypeId

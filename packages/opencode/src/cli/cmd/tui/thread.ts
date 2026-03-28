@@ -10,15 +10,37 @@ import { errorMessage } from "@/util/error"
 import { withTimeout } from "@/util/timeout"
 import { withNetworkOptions, resolveNetworkOptions } from "@/cli/network"
 import { Filesystem } from "@/util/filesystem"
-import type { Event } from "@opencode-ai/sdk/v2"
+import type { Event } from "@merge-ai/sdk/v2"
 import type { EventSource } from "./context/sdk"
 import { win32DisableProcessedInput, win32InstallCtrlCGuard } from "./win32"
 import { TuiConfig } from "@/config/tui"
 import { Instance } from "@/project/instance"
 import { writeHeapSnapshot } from "v8"
+import { spawn } from "child_process"
+import { Flag } from "@/flag/flag"
+
+let relayProcess: ReturnType<typeof spawn> | null = null
+
+function maybeStartRelay() {
+  if (relayProcess) return
+  const relayPort = Flag.MERGE_RELAY_PORT ?? "4000"
+  try {
+    // Find packages/sync/src/index.ts relative to this file
+    const syncEntry = new URL("../../../../../sync/src/index.ts", import.meta.url)
+    relayProcess = spawn("bun", ["run", fileURLToPath(syncEntry)], {
+      env: { ...process.env, MERGE_RELAY_PORT: relayPort },
+      stdio: "ignore",
+      detached: false,
+    })
+    relayProcess.unref?.()
+    Log.Default.info("merge relay started", { port: relayPort })
+  } catch (e) {
+    Log.Default.warn("could not start relay", { error: errorMessage(e) })
+  }
+}
 
 declare global {
-  const OPENCODE_WORKER_PATH: string
+  const MERGE_WORKER_PATH: string
 }
 
 type RpcClient = ReturnType<typeof Rpc.client<typeof rpc>>
@@ -51,7 +73,7 @@ function createEventSource(client: RpcClient): EventSource {
 }
 
 async function target() {
-  if (typeof OPENCODE_WORKER_PATH !== "undefined") return OPENCODE_WORKER_PATH
+  if (typeof MERGE_WORKER_PATH !== "undefined") return MERGE_WORKER_PATH
   const dist = new URL("./cli/cmd/tui/worker.js", import.meta.url)
   if (await Filesystem.exists(fileURLToPath(dist))) return dist
   return new URL("./worker.ts", import.meta.url)
@@ -66,12 +88,12 @@ async function input(value?: string) {
 
 export const TuiThreadCommand = cmd({
   command: "$0 [project]",
-  describe: "start opencode tui",
+  describe: "start merge tui",
   builder: (yargs) =>
     withNetworkOptions(yargs)
       .positional("project", {
         type: "string",
-        describe: "path to start opencode in",
+        describe: "path to start merge in",
       })
       .option("model", {
         type: "string",
@@ -99,6 +121,10 @@ export const TuiThreadCommand = cmd({
       .option("agent", {
         type: "string",
         describe: "agent to use",
+      })
+      .option("join", {
+        type: "string",
+        describe: "join a collaboration session by ID (equivalent to /collaborate join <id>)",
       }),
   handler: async (args) => {
     // Keep ENABLE_PROCESSED_INPUT cleared even if other code flips it.
@@ -108,6 +134,7 @@ export const TuiThreadCommand = cmd({
       // Must be the very first thing — disables CTRL_C_EVENT before any Worker
       // spawn or async work so the OS cannot kill the process group.
       win32DisableProcessedInput()
+      maybeStartRelay()
 
       if (args.fork && !args.continue && !args.session) {
         UI.error("--fork requires --continue or --session")
@@ -191,7 +218,7 @@ export const TuiThreadCommand = cmd({
             events: undefined,
           }
         : {
-            url: "http://opencode.internal",
+            url: "http://merge.internal",
             fetch: createWorkerFetch(client),
             events: createEventSource(client),
           }
@@ -219,6 +246,7 @@ export const TuiThreadCommand = cmd({
             model: args.model,
             prompt,
             fork: args.fork,
+            join: args.join,
           },
         })
       } finally {

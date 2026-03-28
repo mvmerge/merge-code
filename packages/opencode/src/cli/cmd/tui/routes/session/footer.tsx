@@ -5,11 +5,13 @@ import { useDirectory } from "../../context/directory"
 import { useConnected } from "../../component/dialog-model"
 import { createStore } from "solid-js/store"
 import { useRoute } from "../../context/route"
+import { useCollab } from "../../context/collab"
 
 export function Footer() {
   const { theme } = useTheme()
   const sync = useSync()
   const route = useRoute()
+  const collab = useCollab()
   const mcp = createMemo(() => Object.values(sync.data.mcp).filter((x) => x.status === "connected").length)
   const mcpError = createMemo(() => Object.values(sync.data.mcp).some((x) => x.status === "failed"))
   const lsp = createMemo(() => Object.keys(sync.data.lsp))
@@ -19,6 +21,7 @@ export function Footer() {
   })
   const directory = useDirectory()
   const connected = useConnected()
+  const collabPeerCount = createMemo(() => collab.state.peers.length + (collab.state.connected ? 1 : 0))
 
   const [store, setStore] = createStore({
     welcome: false,
@@ -85,6 +88,14 @@ export function Footer() {
             <text fg={theme.textMuted}>/status</text>
           </Match>
         </Switch>
+        <Show when={collab.state.connected}>
+          <text fg={theme.success}>
+            COLLAB: {collabPeerCount()} peer{collabPeerCount() !== 1 ? "s" : ""}
+          </text>
+          <text fg={theme.textMuted}>
+            MODE: {collab.state.mode}
+          </text>
+        </Show>
       </box>
     </box>
   )

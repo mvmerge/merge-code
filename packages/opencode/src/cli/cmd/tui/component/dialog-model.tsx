@@ -8,11 +8,21 @@ import { createDialogProviderOptions, DialogProvider } from "./dialog-provider"
 import { DialogVariant } from "./dialog-variant"
 import { useKeybind } from "../context/keybind"
 import * as fuzzysort from "fuzzysort"
+import { useCollab } from "@tui/context/collab"
+import { useRoute } from "@tui/context/route"
+import { captureFileTree } from "@tui/component/collab-bridge"
+
+const MERGE_FIRST_CLASS_MODELS = [
+  { providerID: "anthropic", modelID: "claude-code", name: "Claude Code", description: "Anthropic" },
+  { providerID: "openai", modelID: "codex-mini-latest", name: "OpenAI Codex", description: "OpenAI" },
+  { providerID: "google", modelID: "gemini-2.5-pro", name: "Google Gemini", description: "Google" },
+  { providerID: "antigravity", modelID: "antigravity-1", name: "Google Antigravity", description: "Google (Preview)" },
+] as const
 
 export function useConnected() {
   const sync = useSync()
   return createMemo(() =>
-    sync.data.provider.some((x) => x.id !== "opencode" || Object.values(x.models).some((y) => y.cost?.input !== 0)),
+    sync.data.provider.some((x) => x.id !== "merge" || Object.values(x.models).some((y) => y.cost?.input !== 0)),
   )
 }
 
@@ -21,6 +31,8 @@ export function DialogModel(props: { providerID?: string }) {
   const sync = useSync()
   const dialog = useDialog()
   const keybind = useKeybind()
+  const collab = useCollab()
+  const route = useRoute()
   const [query, setQuery] = createSignal("")
 
   const connected = useConnected()
@@ -48,8 +60,8 @@ export function DialogModel(props: { providerID?: string }) {
             title: model.name ?? item.modelID,
             description: provider.name,
             category,
-            disabled: provider.id === "opencode" && model.id.includes("-nano"),
-            footer: model.cost?.input === 0 && provider.id === "opencode" ? "Free" : undefined,
+            disabled: provider.id === "merge" && model.id.includes("-nano"),
+            footer: model.cost?.input === 0 && provider.id === "merge" ? "Free" : undefined,
             onSelect: () => {
               onSelect(provider.id, model.id)
             },
@@ -69,7 +81,7 @@ export function DialogModel(props: { providerID?: string }) {
     const providerOptions = pipe(
       sync.data.provider,
       sortBy(
-        (provider) => provider.id !== "opencode",
+        (provider) => provider.id !== "merge",
         (provider) => provider.name,
       ),
       flatMap((provider) =>
@@ -85,8 +97,8 @@ export function DialogModel(props: { providerID?: string }) {
               ? "(Favorite)"
               : undefined,
             category: connected() ? provider.name : undefined,
-            disabled: provider.id === "opencode" && model.includes("-nano"),
-            footer: info.cost?.input === 0 && provider.id === "opencode" ? "Free" : undefined,
+            disabled: provider.id === "merge" && model.includes("-nano"),
+            footer: info.cost?.input === 0 && provider.id === "merge" ? "Free" : undefined,
             onSelect() {
               onSelect(provider.id, model)
             },
@@ -118,14 +130,31 @@ export function DialogModel(props: { providerID?: string }) {
         )
       : []
 
+    // Merge first-class models (always shown at top)
+    const mergeModels = MERGE_FIRST_CLASS_MODELS
+      .filter((m) => !props.providerID || m.providerID === props.providerID)
+      .filter((m) => {
+        // hide if already in favorites or recents
+        if (favorites.some((f) => f.providerID === m.providerID && f.modelID === m.modelID)) return false
+        if (recents.some((r) => r.providerID === m.providerID && r.modelID === m.modelID)) return false
+        return true
+      })
+      .map((m) => ({
+        value: { providerID: m.providerID, modelID: m.modelID },
+        title: m.name,
+        description: m.description,
+        category: "Merge",
+        onSelect() { onSelect(m.providerID, m.modelID) },
+      }))
+
     if (needle) {
       return [
-        ...fuzzysort.go(needle, providerOptions, { keys: ["title", "category"] }).map((x) => x.obj),
+        ...fuzzysort.go(needle, [...mergeModels, ...providerOptions], { keys: ["title", "category"] }).map((x) => x.obj),
         ...fuzzysort.go(needle, popularProviders, { keys: ["title"] }).map((x) => x.obj),
       ]
     }
 
-    return [...favoriteOptions, ...recentOptions, ...providerOptions, ...popularProviders]
+    return [...mergeModels, ...favoriteOptions, ...recentOptions, ...providerOptions, ...popularProviders]
   })
 
   const provider = createMemo(() =>
@@ -136,6 +165,27 @@ export function DialogModel(props: { providerID?: string }) {
 
   function onSelect(providerID: string, modelID: string) {
     local.model.set({ providerID, modelID }, { recent: true })
+    // Broadcast model_switch to collab peers with full context handoff
+    if (collab.state.connected) {
+      const cwd = (typeof process !== "undefined" && process.cwd()) || ""
+      const fileTree = cwd ? captureFileTree(cwd) : ""
+      // Build recent messages from sync store for current session
+      const recentMessages = (route.data.type === "session" ? (sync.data.message[route.data.sessionID] ?? []) : [])
+        .slice(-10)
+        .map((m) => ({
+          role: m.role as string,
+          content: (sync.data.part[m.id] ?? [])
+            .flatMap((p) => (p.type === "text" ? [p.text] : []))
+            .join("\n"),
+        }))
+      collab.sendEvent({
+        type: "model_switch",
+        sessionId: collab.state.sessionId,
+        peerId: collab.state.peerId ?? "local",
+        newModel: `${providerID}/${modelID}`,
+        contextHandoff: { recentMessages, recentDiffs: [], fileTree },
+      })
+    }
     if (local.model.variant.list().length > 0) {
       dialog.replace(() => <DialogVariant />)
       return

@@ -1,4 +1,4 @@
-import { Slug } from "@opencode-ai/util/slug"
+import { Slug } from "@merge-ai/util/slug"
 import path from "path"
 import { BusEvent } from "@/bus/bus-event"
 import { Bus } from "@/bus"
@@ -237,7 +237,7 @@ export namespace Session {
 
   export function plan(input: { slug: string; time: { created: number } }) {
     const base = Instance.project.vcs
-      ? path.join(Instance.worktree, ".opencode", "plans")
+      ? path.join(Instance.worktree, ".merge", "plans")
       : path.join(Global.Path.data, "plans")
     return path.join(base, [input.time.created, input.slug].join("-") + ".md")
   }
@@ -268,7 +268,7 @@ export namespace Session {
     // OpenRouter provides inputTokens as the total count of input tokens (including cached).
     // AFAIK other providers (OpenRouter/OpenAI/Gemini etc.) do it the same way e.g. vercel/ai#8794 (comment)
     // Anthropic does it differently though - inputTokens doesn't include cached tokens.
-    // It looks like OpenCode's cost calculation assumes all providers return inputTokens the same way Anthropic does (I'm guessing getUsage logic was originally implemented with anthropic), so it's causing incorrect cost calculation for OpenRouter and others.
+    // It looks like Merge's cost calculation assumes all providers return inputTokens the same way Anthropic does (I'm guessing getUsage logic was originally implemented with anthropic), so it's causing incorrect cost calculation for OpenRouter and others.
     const excludesCachedTokens = !!(input.metadata?.["anthropic"] || input.metadata?.["bedrock"])
     const adjustedInputTokens = safe(
       excludesCachedTokens ? inputTokens : inputTokens - cacheReadInputTokens - cacheWriteInputTokens,
@@ -373,7 +373,7 @@ export namespace Session {
     }) => Effect.Effect<void>
   }
 
-  export class Service extends ServiceMap.Service<Service, Interface>()("@opencode/Session") {}
+  export class Service extends ServiceMap.Service<Service, Interface>()("@merge/Session") {}
 
   type Patch = z.infer<typeof Event.Updated.schema>["info"]
 
@@ -415,11 +415,11 @@ export namespace Session {
         yield* Effect.sync(() => SyncEvent.run(Event.Created, { sessionID: result.id, info: result }))
 
         const cfg = yield* config.get()
-        if (!result.parentID && (Flag.OPENCODE_AUTO_SHARE || cfg.share === "auto")) {
+        if (!result.parentID && (Flag.MERGE_AUTO_SHARE || cfg.share === "auto")) {
           yield* share(result.id).pipe(Effect.ignore, Effect.forkIn(scope))
         }
 
-        if (!Flag.OPENCODE_EXPERIMENTAL_WORKSPACES) {
+        if (!Flag.MERGE_EXPERIMENTAL_WORKSPACES) {
           // This only exist for backwards compatibility. We should not be
           // manually publishing this event; it is a sync event now
           yield* bus.publish(Event.Updated, {

@@ -9,6 +9,7 @@ import * as Timeout from "../../../src/util/timeout"
 import * as Network from "../../../src/cli/network"
 import * as Win32 from "../../../src/cli/cmd/tui/win32"
 import { TuiConfig } from "../../../src/config/tui"
+import * as ChildProcess from "child_process"
 import { Instance } from "../../../src/project/instance"
 
 const stop = new Error("stop")
@@ -37,7 +38,7 @@ function setup() {
     mdns: false,
     port: 0,
     hostname: "127.0.0.1",
-    mdnsDomain: "opencode.local",
+    mdnsDomain: "merge.local",
     cors: [],
   })
   spyOn(Win32, "win32DisableProcessedInput").mockImplementation(() => {})
@@ -58,19 +59,20 @@ describe("tui thread", () => {
     const { TuiThreadCommand } = await import("../../../src/cli/cmd/tui/thread")
     const args: Parameters<NonNullable<typeof TuiThreadCommand.handler>>[0] = {
       _: [],
-      $0: "opencode",
+      $0: "merge",
       project,
       prompt: "hi",
       model: undefined,
       agent: undefined,
+      join: undefined,
       session: undefined,
       continue: false,
       fork: false,
       port: 0,
       hostname: "127.0.0.1",
       mdns: false,
-      "mdns-domain": "opencode.local",
-      mdnsDomain: "opencode.local",
+      "mdns-domain": "merge.local",
+      mdnsDomain: "merge.local",
       cors: [],
     }
     return TuiThreadCommand.handler(args)
@@ -125,4 +127,5 @@ describe("tui thread", () => {
   test("uses the real cwd after resolving a relative project from PWD", async () => {
     await check(".")
   })
+
 })
