@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://merge.ai">
     <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
+      <source srcset="https://i.postimg.cc/FznvwH6w/ascii-art-text-(1).png" media="(prefers-color-scheme: dark)">
+      <source srcset="https://i.postimg.cc/FznvwH6w/ascii-art-text-(1).png" media="(prefers-color-scheme: light)">
       <img src="https://i.postimg.cc/FznvwH6w/ascii-art-text-(1).png" alt="Merge logo">
     </picture>
   </a>
